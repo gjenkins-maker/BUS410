@@ -22,14 +22,56 @@ st.caption(
 @st.cache_data
 def load_data():
     df = pd.read_csv("county_year_panel.csv")
+
+    # Clean column names
+    df.columns = df.columns.str.strip()
+
+    # Rename common lowercase column names to match app code
+    rename_map = {
+        "state": "State",
+        "county": "County",
+        "year": "Year",
+        "pm25": "PM2.5",
+        "pm2.5": "PM2.5",
+        "traffic_proximity": "Traffic Proximity",
+        "traffic proximity": "Traffic Proximity",
+        "wastewater": "Wastewater",
+        "diesel_pm": "Diesel PM",
+        "diesel pm": "Diesel PM",
+        "respiratory_hazard": "Respiratory Hazard",
+        "respiratory hazard": "Respiratory Hazard",
+        "ozone": "Ozone",
+    }
+
+    cleaned_columns = {}
+    for col in df.columns:
+        lower_col = col.lower().strip()
+        if lower_col in rename_map:
+            cleaned_columns[col] = rename_map[lower_col]
+
+    df = df.rename(columns=cleaned_columns)
+
     return df
 
 df = load_data()
 
 # -----------------------------
+# Safety check
+# -----------------------------
+required_columns = ["State", "County", "Year"]
+
+missing_required = [col for col in required_columns if col not in df.columns]
+
+if missing_required:
+    st.error("Your CSV is missing required columns.")
+    st.write("Missing columns:", missing_required)
+    st.write("Columns found in your CSV:", list(df.columns))
+    st.stop()
+
+# -----------------------------
 # Indicators
 # -----------------------------
-indicators = [
+possible_indicators = [
     "PM2.5",
     "Traffic Proximity",
     "Wastewater",
@@ -38,19 +80,17 @@ indicators = [
     "Ozone"
 ]
 
+indicators = [col for col in possible_indicators if col in df.columns]
+
+if len(indicators) == 0:
+    st.error("No pollution indicator columns were found.")
+    st.write("Columns found in your CSV:", list(df.columns))
+    st.stop()
+
 # -----------------------------
 # Helper functions
 # -----------------------------
 def get_health_label(county_value, national_value):
-    """
-    Compares county value to the national average.
-
-    Since these are pollution indicators:
-    - Lower than national average = Healthier
-    - Close to national average = Moderate
-    - Higher than national average = Unhealthy
-    """
-
     if pd.isna(county_value) or pd.isna(national_value) or national_value == 0:
         return "No data", "⚪"
 
@@ -85,7 +125,6 @@ def get_comparison_sentence(indicator, county_name, county_value, state_avg, nat
         f"{national_comparison} the national average."
     )
 
-
 # -----------------------------
 # Sidebar filters
 # -----------------------------
@@ -110,8 +149,11 @@ county_df = df[
     (df["County"] == selected_county)
 ].copy()
 
-latest_year = county_df["Year"].max()
+if county_df.empty:
+    st.error("No data found for this county.")
+    st.stop()
 
+latest_year = county_df["Year"].max()
 latest_county = county_df[county_df["Year"] == latest_year].iloc[0]
 
 state_latest_df = df[
