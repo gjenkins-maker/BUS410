@@ -22,17 +22,18 @@ st.caption(
 # -----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("county_year_panel.csv")
+    summary_df = pd.read_csv("county_summary.csv")
+    panel_df = pd.read_csv("county_year_panel.csv")
 
-    # Clean column names
-    df.columns = df.columns.str.strip()
+    summary_df.columns = summary_df.columns.str.strip()
+    panel_df.columns = panel_df.columns.str.strip()
 
-    return df
+    return summary_df, panel_df
 
-df = load_data()
+summary_df, panel_df = load_data()
 
 # -----------------------------
-# Helper: flexible column matching
+# Helper functions
 # -----------------------------
 def clean_name(name):
     return re.sub(r"[^a-z0-9]", "", str(name).lower())
@@ -56,106 +57,7 @@ def find_column(df, possible_names):
     return None
 
 
-# -----------------------------
-# Match core columns
-# -----------------------------
-state_col = find_column(df, ["State", "state"])
-county_col = find_column(df, ["County", "county"])
-year_col = find_column(df, ["Year", "year"])
-
-if state_col is None or county_col is None or year_col is None:
-    st.error("The app could not find the State, County, or Year columns.")
-    st.write("Columns found in your CSV:")
-    st.write(list(df.columns))
-    st.stop()
-
-# Rename core columns for easier use
-df = df.rename(
-    columns={
-        state_col: "State",
-        county_col: "County",
-        year_col: "Year"
-    }
-)
-
-# -----------------------------
-# Match indicator columns
-# -----------------------------
-indicator_options = {
-    "PM2.5": [
-        "PM2.5",
-        "PM25",
-        "PM 2.5",
-        "Particulate Matter 2.5",
-        "particulate_matter_2_5"
-    ],
-    "Traffic Proximity": [
-        "Traffic Proximity",
-        "traffic_proximity",
-        "Traffic",
-        "traffic proximity"
-    ],
-    "Wastewater": [
-        "Wastewater",
-        "wastewater",
-        "Waste Water",
-        "waste_water"
-    ],
-    "Diesel PM": [
-        "Diesel PM",
-        "diesel_pm",
-        "Diesel Particulate Matter",
-        "Diesel"
-    ],
-    "Respiratory Hazard": [
-        "Respiratory Hazard",
-        "respiratory_hazard",
-        "Respiratory",
-        "resp hazard",
-        "resp_hazard"
-    ],
-    "Ozone": [
-        "Ozone",
-        "ozone",
-        "O3"
-    ]
-}
-
-indicator_columns = {}
-
-for display_name, possible_names in indicator_options.items():
-    matched_col = find_column(df, possible_names)
-    indicator_columns[display_name] = matched_col
-
-# Convert indicator columns to numbers
-for display_name, actual_col in indicator_columns.items():
-    if actual_col is not None:
-        df[actual_col] = pd.to_numeric(df[actual_col], errors="coerce")
-
-# Available indicators for the chart
-available_indicators = [
-    display_name
-    for display_name, actual_col in indicator_columns.items()
-    if actual_col is not None
-]
-
-if len(available_indicators) == 0:
-    st.error("No pollution indicator columns were found.")
-    st.write("Columns found in your CSV:")
-    st.write(list(df.columns))
-    st.stop()
-
-# -----------------------------
-# Health label logic
-# -----------------------------
 def get_health_label(county_value, national_value):
-    """
-    Pollution indicators:
-    - Lower than national average = healthier
-    - Close to national average = moderate
-    - Higher than national average = unhealthy
-    """
-
     if pd.isna(county_value) or pd.isna(national_value) or national_value == 0:
         return "No data", "⚪", "#6b7280"
 
@@ -170,19 +72,8 @@ def get_health_label(county_value, national_value):
 
 
 def get_comparison_sentence(indicator, county_name, county_value, state_avg, national_avg):
-    if county_value < state_avg:
-        state_comparison = "below"
-    elif county_value > state_avg:
-        state_comparison = "above"
-    else:
-        state_comparison = "equal to"
-
-    if county_value < national_avg:
-        national_comparison = "below"
-    elif county_value > national_avg:
-        national_comparison = "above"
-    else:
-        national_comparison = "equal to"
+    state_comparison = "below" if county_value < state_avg else "above"
+    national_comparison = "below" if county_value < national_avg else "above"
 
     return (
         f"Latest-year comparison: {indicator} in {county_name} is "
@@ -190,9 +81,65 @@ def get_comparison_sentence(indicator, county_name, county_value, state_avg, nat
         f"{national_comparison} the national average."
     )
 
+# -----------------------------
+# Match core columns
+# -----------------------------
+summary_state_col = find_column(summary_df, ["State", "state"])
+summary_county_col = find_column(summary_df, ["County", "county"])
+
+panel_state_col = find_column(panel_df, ["State", "state"])
+panel_county_col = find_column(panel_df, ["County", "county"])
+panel_year_col = find_column(panel_df, ["Year", "year"])
+
+summary_df = summary_df.rename(
+    columns={
+        summary_state_col: "State",
+        summary_county_col: "County"
+    }
+)
+
+panel_df = panel_df.rename(
+    columns={
+        panel_state_col: "State",
+        panel_county_col: "County",
+        panel_year_col: "Year"
+    }
+)
 
 # -----------------------------
-# Custom card styling
+# Indicator matching
+# -----------------------------
+indicator_options = {
+    "PM2.5": ["PM2.5", "PM25", "pm25"],
+    "Traffic Proximity": ["Traffic Proximity", "traffic_proximity", "traffic"],
+    "Wastewater": ["Wastewater", "wastewater", "waste water"],
+    "Diesel PM": ["Diesel PM", "diesel_pm", "diesel"],
+    "Respiratory Hazard": ["Respiratory Hazard", "respiratory_hazard", "respiratory"],
+    "Ozone": ["Ozone", "ozone", "o3"]
+}
+
+summary_indicator_columns = {}
+panel_indicator_columns = {}
+
+for display_name, possible_names in indicator_options.items():
+    summary_indicator_columns[display_name] = find_column(summary_df, possible_names)
+    panel_indicator_columns[display_name] = find_column(panel_df, possible_names)
+
+for col in summary_indicator_columns.values():
+    if col is not None:
+        summary_df[col] = pd.to_numeric(summary_df[col], errors="coerce")
+
+for col in panel_indicator_columns.values():
+    if col is not None:
+        panel_df[col] = pd.to_numeric(panel_df[col], errors="coerce")
+
+available_chart_indicators = [
+    indicator for indicator, col in panel_indicator_columns.items()
+    if col is not None
+]
+
+# -----------------------------
+# Styling
 # -----------------------------
 st.markdown(
     """
@@ -238,11 +185,11 @@ st.markdown(
 # -----------------------------
 st.sidebar.header("Search")
 
-states = sorted(df["State"].dropna().unique())
+states = sorted(summary_df["State"].dropna().unique())
 selected_state = st.sidebar.selectbox("State", states)
 
 counties = sorted(
-    df[df["State"] == selected_state]["County"]
+    summary_df[summary_df["State"] == selected_state]["County"]
     .dropna()
     .unique()
 )
@@ -250,26 +197,34 @@ counties = sorted(
 selected_county = st.sidebar.selectbox("County", counties)
 
 # -----------------------------
-# Filter selected county data
+# Filter data
 # -----------------------------
-county_df = df[
-    (df["State"] == selected_state) &
-    (df["County"] == selected_county)
+summary_county_df = summary_df[
+    (summary_df["State"] == selected_state) &
+    (summary_df["County"] == selected_county)
 ].copy()
 
-if county_df.empty:
-    st.error("No data found for this county.")
+panel_county_df = panel_df[
+    (panel_df["State"] == selected_state) &
+    (panel_df["County"] == selected_county)
+].copy()
+
+if summary_county_df.empty:
+    st.error("No summary data found for this county.")
     st.stop()
 
-latest_year = county_df["Year"].max()
-latest_county = county_df[county_df["Year"] == latest_year].iloc[0]
+latest_summary = summary_county_df.iloc[0]
 
-state_latest_df = df[
-    (df["State"] == selected_state) &
-    (df["Year"] == latest_year)
+latest_year = panel_county_df["Year"].max()
+
+panel_state_latest_df = panel_df[
+    (panel_df["State"] == selected_state) &
+    (panel_df["Year"] == latest_year)
 ]
 
-national_latest_df = df[df["Year"] == latest_year]
+panel_national_latest_df = panel_df[
+    panel_df["Year"] == latest_year
+]
 
 # -----------------------------
 # Header
@@ -295,7 +250,7 @@ st.markdown(
 st.write("")
 
 # -----------------------------
-# Metric cards: all 6 indicators
+# Metric cards using county_summary.csv
 # -----------------------------
 all_indicators = [
     "PM2.5",
@@ -310,7 +265,7 @@ for row_start in range(0, len(all_indicators), 3):
     cols = st.columns(3)
 
     for col_index, indicator in enumerate(all_indicators[row_start:row_start + 3]):
-        actual_col = indicator_columns.get(indicator)
+        actual_col = summary_indicator_columns.get(indicator)
 
         with cols[col_index]:
             if actual_col is None:
@@ -319,8 +274,8 @@ for row_start in range(0, len(all_indicators), 3):
                 health_icon = "⚪"
                 health_color = "#6b7280"
             else:
-                county_value = latest_county[actual_col]
-                national_avg = national_latest_df[actual_col].mean()
+                county_value = latest_summary[actual_col]
+                national_avg = summary_df[actual_col].mean()
 
                 health_label, health_icon, health_color = get_health_label(
                     county_value,
@@ -348,16 +303,17 @@ for row_start in range(0, len(all_indicators), 3):
 # -----------------------------
 # Indicator selector
 # -----------------------------
-selected_indicator = st.selectbox("Indicator", available_indicators)
-
-selected_indicator_col = indicator_columns[selected_indicator]
+selected_indicator = st.selectbox("Indicator", available_chart_indicators)
+selected_indicator_col = panel_indicator_columns[selected_indicator]
 
 # -----------------------------
-# Latest-year comparison message
+# Comparison message
 # -----------------------------
-county_latest_value = latest_county[selected_indicator_col]
-state_latest_avg = state_latest_df[selected_indicator_col].mean()
-national_latest_avg = national_latest_df[selected_indicator_col].mean()
+latest_county_panel = panel_county_df[panel_county_df["Year"] == latest_year].iloc[0]
+
+county_latest_value = latest_county_panel[selected_indicator_col]
+state_latest_avg = panel_state_latest_df[selected_indicator_col].mean()
+national_latest_avg = panel_national_latest_df[selected_indicator_col].mean()
 
 comparison_message = get_comparison_sentence(
     selected_indicator,
@@ -370,14 +326,14 @@ comparison_message = get_comparison_sentence(
 st.info(comparison_message)
 
 # -----------------------------
-# Prepare chart data
+# Chart
 # -----------------------------
-county_trend = county_df[["Year", selected_indicator_col]].copy()
+county_trend = panel_county_df[["Year", selected_indicator_col]].copy()
 county_trend["Series"] = "County"
 county_trend = county_trend.rename(columns={selected_indicator_col: "Value"})
 
 state_trend = (
-    df[df["State"] == selected_state]
+    panel_df[panel_df["State"] == selected_state]
     .groupby("Year")[selected_indicator_col]
     .mean()
     .reset_index()
@@ -386,7 +342,7 @@ state_trend["Series"] = "State Average"
 state_trend = state_trend.rename(columns={selected_indicator_col: "Value"})
 
 national_trend = (
-    df.groupby("Year")[selected_indicator_col]
+    panel_df.groupby("Year")[selected_indicator_col]
     .mean()
     .reset_index()
 )
@@ -398,9 +354,6 @@ chart_df = pd.concat(
     ignore_index=True
 )
 
-# -----------------------------
-# Chart
-# -----------------------------
 st.markdown(f"### {selected_indicator}: {selected_county} vs State vs National")
 
 fig = px.line(
@@ -408,8 +361,7 @@ fig = px.line(
     x="Year",
     y="Value",
     color="Series",
-    markers=True,
-    title=None
+    markers=True
 )
 
 fig.update_layout(
@@ -429,7 +381,7 @@ st.markdown("### Health Label Guide")
 
 st.markdown(
     """
-    The health label compares the county's latest-year value to the national average.
+    The health label compares the county's latest value to the national average.
 
     | Label | Meaning |
     |---|---|
@@ -445,7 +397,14 @@ st.markdown(
 # Debug helper
 # -----------------------------
 with st.expander("Column matching details"):
-    st.write("This shows which CSV column is being used for each indicator.")
-    st.write(indicator_columns)
-    st.write("All columns in CSV:")
-    st.write(list(df.columns))
+    st.write("Summary file indicator columns:")
+    st.write(summary_indicator_columns)
+
+    st.write("Panel file indicator columns:")
+    st.write(panel_indicator_columns)
+
+    st.write("Columns in county_summary.csv:")
+    st.write(list(summary_df.columns))
+
+    st.write("Columns in county_year_panel.csv:")
+    st.write(list(panel_df.columns))
