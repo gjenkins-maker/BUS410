@@ -1,0 +1,61 @@
+state,county,county_fips,group,indicator,indicator_label,before_avg,present_avg,abs_change,pct_change,direction,interpretation
+Arizona,Coconino,04005,Non-DC,DSLPM,Diesel Particulate Matter,0.359459,0.098,-0.261458,-72.74,Improved,Improved: DSLPM moved from 0.3595 to 0.0980
+Arizona,Coconino,04005,Non-DC,OZONE,Ozone,48.478709,53.974385,5.495677,11.34,Worsened,Worsened: OZONE moved from 48.4787 to 53.9744
+Arizona,Coconino,04005,Non-DC,PM25,PM2.5 Fine Particles,4.673659,4.838631,0.164972,3.53,Worsened,Worsened: PM25 moved from 4.6737 to 4.8386
+Arizona,Coconino,04005,Non-DC,PTRAF,Traffic Proximity,98.592213,314.064109,215.471896,218.55,Worsened,Worsened: PTRAF moved from 98.5922 to 314.0641
+Arizona,Coconino,04005,Non-DC,PWDIS,Wastewater Discharge,0.157086,0.71679,0.559704,356.31,Worsened,Worsened: PWDIS moved from 0.1571 to 0.7168
+Arizona,Coconino,04005,Non-DC,RESP,Respiratory Hazard Index,0.752314,0.175439,-0.576875,-76.68,Improved,Improved: RESP moved from 0.7523 to 0.1754
+Arizona,Maricopa,04013,DC-heavy,DSLPM,Diesel Particulate Matter,1.555024,0.423415,-1.13161,-72.77,Improved,Improved: DSLPM moved from 1.5550 to 0.4234
+Arizona,Maricopa,04013,DC-heavy,OZONE,Ozone,46.67778,55.611534,8.933754,19.14,Worsened,Worsened: OZONE moved from 46.6778 to 55.6115
+Arizona,Maricopa,04013,DC-heavy,PM25,PM2.5 Fine Particles,7.30655,8.11173,0.80518,11.02,Worsened,Worsened: PM25 moved from 7.3065 to 8.1117
+Arizona,Maricopa,04013,DC-heavy,PTRAF,Traffic Proximity,961.803623,766.828803,-194.97482,-20.27,Improved,Improved: PTRAF moved from 961.8036 to 766.8288
+Arizona,Maricopa,04013,DC-heavy,PWDIS,Wastewater Discharge,0.267987,1.660989,1.393002,519.8,Worsened,Worsened: PWDIS moved from 0.2680 to 1.6610
+Arizona,Maricopa,04013,DC-heavy,RESP,Respiratory Hazard Index,1.819799,0.445075,-1.374725,-75.54,Improved,Improved: RESP moved from 1.8198 to 0.4451
+Arizona,Mohave,04015,Non-DC,DSLPM,Diesel Particulate Matter,0.348219,0.084859,-0.263361,-75.63,Improved,Improved: DSLPM moved from 0.3482 to 0.0849
+Arizona,Mohave,04015,Non-DC,OZONE,Ozone,46.587143,54.018402,7.431259,15.95,Worsened,Worsened: OZONE moved from 46.5871 to 54.0184
+Arizona,Mohave,04015,Non-DC,PM25,PM2.5 Fine Particles,5.347655,5.505553,0.157898,2.95,Worsened,Worsened: PM25 moved from 5.3477 to 5.5056
+Arizona,Mohave,04015,Non-DC,PTRAF,Traffic Proximity,80.839216,92.79006,11.950844,14.78,Worsened,Worsened: PTRAF moved from 80.8392 to 92.7901
+Arizona,Mohave,04015,Non-DC,PWDIS,Wastewater Discharge,0.227342,0.59555,0.368207,161.96,Worsened,Worsened: PWDIS moved from 0.2273 to 0.5955
+Arizona,Mohave,04015,Non-DC,RESP,Respiratory Hazard Index,0.892244,0.241566,-0.650678,-72.93,Improved,Improved: RESP moved from 0.8922 to 0.2416
+Arizona,Yavapai,04025,Non-DC,DSLPM,Diesel Particulate Matter,0.216467,0.08454,-0.131927,-60.95,Improved,Improved: DSLPM moved from 0.2165 to 0.0845
+Arizona,Yavapai,04025,Non-DC,OZONE,Ozone,48.577877,52.882908,4.305031,8.86,Worsened,Worsened: OZONE moved from 48.5779 to 52.8829
+Arizona,Yavapai,04025,Non-DC,PM25,PM2.5 Fine Particles,5.066765,5.368612,0.301847,5.96,Worsened,Worsened: PM25 moved from 5.0668 to 5.3686
+Arizona,Yavapai,04025,Non-DC,PTRAF,Traffic Proximity,57.227466,139.594948,82.367481,143.93,Worsened,Worsened: PTRAF moved from 57.2275 to 139.5949
+Arizona,Yavapai,04025,Non-DC,PWDIS,Wastewater Discharge,63.210657,70.474451,7.263794,11.49,Worsened,Worsened: PWDIS moved from 63.2107 to 70.4745
+Arizona,Yavapai,04025,Non-DC,RESP,Respiratory Hazard Index,0.672321,0.189143,-0.483178,-71.87,Improved,Improved: RESP moved from 0.6723 to 0.1891
+Virginia,Clarke,51043,Non-DC,DSLPM,Diesel Particulate Matter,0.390357,0.148885,-0.241471,-61.86,Improved,Improved: DSLPM moved from 0.3904 to 0.1489
+Virginia,Clarke,51043,Non-DC,OZONE,Ozone,39.058095,39.190356,0.132261,0.34,Worsened,Worsened: OZONE moved from 39.0581 to 39.1904
+Virginia,Clarke,51043,Non-DC,PM25,PM2.5 Fine Particles,8.742368,7.509819,-1.232549,-14.1,Improved,Improved: PM25 moved from 8.7424 to 7.5098
+Virginia,Clarke,51043,Non-DC,PTRAF,Traffic Proximity,91.343623,50.659143,-40.68448,-44.54,Improved,Improved: PTRAF moved from 91.3436 to 50.6591
+Virginia,Clarke,51043,Non-DC,PWDIS,Wastewater Discharge,0.000134,0.001001,0.000867,645.59,Worsened,Worsened: PWDIS moved from 0.0001 to 0.0010
+Virginia,Clarke,51043,Non-DC,RESP,Respiratory Hazard Index,0.953742,0.3,-0.653742,-68.54,Improved,Improved: RESP moved from 0.9537 to 0.3000
+Virginia,Fairfax,51059,DC-heavy,DSLPM,Diesel Particulate Matter,1.070638,0.354056,-0.716582,-66.93,Improved,Improved: DSLPM moved from 1.0706 to 0.3541
+Virginia,Fairfax,51059,DC-heavy,OZONE,Ozone,37.312698,42.399774,5.087077,13.63,Worsened,Worsened: OZONE moved from 37.3127 to 42.3998
+Virginia,Fairfax,51059,DC-heavy,PM25,PM2.5 Fine Particles,9.15937,8.403977,-0.755393,-8.25,Improved,Improved: PM25 moved from 9.1594 to 8.4040
+Virginia,Fairfax,51059,DC-heavy,PTRAF,Traffic Proximity,827.990654,1254.72537,426.734716,51.54,Worsened,Worsened: PTRAF moved from 827.9907 to 1254.7254
+Virginia,Fairfax,51059,DC-heavy,PWDIS,Wastewater Discharge,0.002625,0.004635,0.00201,76.57,Worsened,Worsened: PWDIS moved from 0.0026 to 0.0046
+Virginia,Fairfax,51059,DC-heavy,RESP,Respiratory Hazard Index,2.446669,0.402659,-2.04401,-83.54,Improved,Improved: RESP moved from 2.4467 to 0.4027
+Virginia,Fauquier,51061,Non-DC,DSLPM,Diesel Particulate Matter,0.488301,0.141919,-0.346383,-70.94,Improved,Improved: DSLPM moved from 0.4883 to 0.1419
+Virginia,Fauquier,51061,Non-DC,OZONE,Ozone,37.92311,38.437332,0.514222,1.36,Worsened,Worsened: OZONE moved from 37.9231 to 38.4373
+Virginia,Fauquier,51061,Non-DC,PM25,PM2.5 Fine Particles,8.295779,7.422028,-0.873751,-10.53,Improved,Improved: PM25 moved from 8.2958 to 7.4220
+Virginia,Fauquier,51061,Non-DC,PTRAF,Traffic Proximity,125.561798,199.230723,73.668925,58.67,Worsened,Worsened: PTRAF moved from 125.5618 to 199.2307
+Virginia,Fauquier,51061,Non-DC,PWDIS,Wastewater Discharge,0.001156,0.000404,-0.000752,-65.05,Improved,Improved: PWDIS moved from 0.0012 to 0.0004
+Virginia,Fauquier,51061,Non-DC,RESP,Respiratory Hazard Index,1.171105,0.3,-0.871105,-74.38,Improved,Improved: RESP moved from 1.1711 to 0.3000
+Virginia,Loudoun,51107,DC-heavy,DSLPM,Diesel Particulate Matter,0.946766,0.246765,-0.700002,-73.94,Improved,Improved: DSLPM moved from 0.9468 to 0.2468
+Virginia,Loudoun,51107,DC-heavy,OZONE,Ozone,38.241514,41.999058,3.757544,9.83,Worsened,Worsened: OZONE moved from 38.2415 to 41.9991
+Virginia,Loudoun,51107,DC-heavy,PM25,PM2.5 Fine Particles,9.120622,8.178041,-0.942581,-10.33,Improved,Improved: PM25 moved from 9.1206 to 8.1780
+Virginia,Loudoun,51107,DC-heavy,PTRAF,Traffic Proximity,200.883247,354.885602,154.002355,76.66,Worsened,Worsened: PTRAF moved from 200.8832 to 354.8856
+Virginia,Loudoun,51107,DC-heavy,PWDIS,Wastewater Discharge,0.00054,0.000973,0.000433,80.1,Worsened,Worsened: PWDIS moved from 0.0005 to 0.0010
+Virginia,Loudoun,51107,DC-heavy,RESP,Respiratory Hazard Index,2.037048,0.374257,-1.66279,-81.63,Improved,Improved: RESP moved from 2.0370 to 0.3743
+Virginia,Prince William,51153,DC-heavy,DSLPM,Diesel Particulate Matter,0.956128,0.258074,-0.698054,-73.01,Improved,Improved: DSLPM moved from 0.9561 to 0.2581
+Virginia,Prince William,51153,DC-heavy,OZONE,Ozone,37.409469,40.339265,2.929795,7.83,Worsened,Worsened: OZONE moved from 37.4095 to 40.3393
+Virginia,Prince William,51153,DC-heavy,PM25,PM2.5 Fine Particles,8.68591,7.983855,-0.702055,-8.08,Improved,Improved: PM25 moved from 8.6859 to 7.9839
+Virginia,Prince William,51153,DC-heavy,PTRAF,Traffic Proximity,251.734844,599.433049,347.698205,138.12,Worsened,Worsened: PTRAF moved from 251.7348 to 599.4330
+Virginia,Prince William,51153,DC-heavy,PWDIS,Wastewater Discharge,0.001775,0.000121,-0.001655,-93.21,Improved,Improved: PWDIS moved from 0.0018 to 0.0001
+Virginia,Prince William,51153,DC-heavy,RESP,Respiratory Hazard Index,2.060738,0.389789,-1.67095,-81.08,Improved,Improved: RESP moved from 2.0607 to 0.3898
+Virginia,Warren,51187,Non-DC,DSLPM,Diesel Particulate Matter,0.504439,0.156559,-0.34788,-68.96,Improved,Improved: DSLPM moved from 0.5044 to 0.1566
+Virginia,Warren,51187,Non-DC,OZONE,Ozone,39.539777,38.862423,-0.677354,-1.71,Improved,Improved: OZONE moved from 39.5398 to 38.8624
+Virginia,Warren,51187,Non-DC,PM25,PM2.5 Fine Particles,8.193413,6.990508,-1.202905,-14.68,Improved,Improved: PM25 moved from 8.1934 to 6.9905
+Virginia,Warren,51187,Non-DC,PTRAF,Traffic Proximity,219.002557,336.788435,117.785878,53.78,Worsened,Worsened: PTRAF moved from 219.0026 to 336.7884
+Virginia,Warren,51187,Non-DC,PWDIS,Wastewater Discharge,0.000672,4e-05,-0.000631,-94.01,Improved,Improved: PWDIS moved from 0.0007 to 0.0000
+Virginia,Warren,51187,Non-DC,RESP,Respiratory Hazard Index,1.1684,0.3,-0.8684,-74.32,Improved,Improved: RESP moved from 1.1684 to 0.3000
