@@ -23,6 +23,16 @@ st.caption(
 def load_data():
     df = pd.read_csv("county_year_panel.csv")
     df.columns = df.columns.str.strip()
+
+    # Rename lowercase columns to match the app code
+    df = df.rename(
+        columns={
+            "state": "State",
+            "county": "County",
+            "year": "Year"
+        }
+    )
+
     return df
 
 df = load_data()
@@ -95,13 +105,6 @@ df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
 # Helper functions
 # -----------------------------
 def get_health_label(county_value, national_value):
-    """
-    Pollution indicators:
-    lower than national average = healthier
-    close to national average = moderate
-    higher than national average = unhealthy
-    """
-
     if pd.isna(county_value) or pd.isna(national_value) or national_value == 0:
         return "No data", "⚪", "#6b7280"
 
