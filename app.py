@@ -2,286 +2,256 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Deadly Data Lookup", layout="wide")
+# -----------------------------
+# Page setup
+# -----------------------------
+st.set_page_config(
+    page_title="Deadly Data: County Pollution Lookup",
+    layout="wide"
+)
 
-# -----------------------------
-# Basic styling
-# -----------------------------
-st.markdown("""
-<style>
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-.metric-card {
-    background-color: #111827;
-    padding: 16px;
-    border-radius: 12px;
-    border: 1px solid #1f2937;
-    margin-bottom: 12px;
-}
-.metric-label {
-    font-size: 14px;
-    color: #9ca3af;
-    margin-bottom: 6px;
-}
-.metric-value {
-    font-size: 34px;
-    font-weight: 700;
-    color: white;
-}
-.badge-red {
-    display: inline-block;
-    background: #7f1d1d;
-    color: #fecaca;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 14px;
-}
-.badge-blue {
-    display: inline-block;
-    background: #1e3a8a;
-    color: #bfdbfe;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 14px;
-}
-.info-card {
-    background-color: #0f172a;
-    padding: 16px;
-    border-radius: 12px;
-    border: 1px solid #1f2937;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
+st.title("Deadly Data: County Pollution Lookup")
+st.caption(
+    "Explore how pollution burden changed across counties over time, "
+    "with state and national comparisons."
+)
 
 # -----------------------------
 # Load data
 # -----------------------------
-df = pd.read_csv("county_year_panel.csv")
-summary = pd.read_csv("county_summary.csv")
+@st.cache_data
+def load_data():
+    df = pd.read_csv("county_year_panel.csv")
+    return df
 
-df["county_fips"] = df["county_fips"].astype(str).str.zfill(5)
-summary["county_fips"] = summary["county_fips"].astype(str).str.zfill(5)
+df = load_data()
 
-numeric_cols = [
-    "PM25", "PM25_state_avg", "PM25_national_avg",
-    "DSLPM", "DSLPM_state_avg", "DSLPM_national_avg",
-    "PTRAF", "PTRAF_state_avg", "PTRAF_national_avg",
-    "RESP", "RESP_state_avg", "RESP_national_avg",
-    "PWDIS", "PWDIS_state_avg", "PWDIS_national_avg",
-    "OZONE", "OZONE_state_avg", "OZONE_national_avg",
-    "year"
+# -----------------------------
+# Indicators
+# -----------------------------
+indicators = [
+    "PM2.5",
+    "Traffic Proximity",
+    "Wastewater",
+    "Diesel PM",
+    "Respiratory Hazard",
+    "Ozone"
 ]
-for col in numeric_cols:
-    if col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-for col in ["before_avg", "present_avg", "abs_change", "pct_change"]:
-    if col in summary.columns:
-        summary[col] = pd.to_numeric(summary[col], errors="coerce")
 
 # -----------------------------
-# Sidebar
+# Helper functions
 # -----------------------------
-st.sidebar.title("Search")
-states = sorted(df["state"].dropna().unique())
+def get_health_label(county_value, national_value):
+    """
+    Compares county value to the national average.
+
+    Since these are pollution indicators:
+    - Lower than national average = Healthier
+    - Close to national average = Moderate
+    - Higher than national average = Unhealthy
+    """
+
+    if pd.isna(county_value) or pd.isna(national_value) or national_value == 0:
+        return "No data", "⚪"
+
+    percent_diff = (county_value - national_value) / national_value
+
+    if percent_diff <= -0.10:
+        return "Healthy", "🟢"
+    elif percent_diff <= 0.10:
+        return "Moderate", "🟡"
+    else:
+        return "Unhealthy", "🔴"
+
+
+def get_comparison_sentence(indicator, county_name, county_value, state_avg, national_avg):
+    if county_value < state_avg:
+        state_comparison = "below"
+    elif county_value > state_avg:
+        state_comparison = "above"
+    else:
+        state_comparison = "equal to"
+
+    if county_value < national_avg:
+        national_comparison = "below"
+    elif county_value > national_avg:
+        national_comparison = "above"
+    else:
+        national_comparison = "equal to"
+
+    return (
+        f"Latest-year comparison: {indicator} in {county_name} is "
+        f"{state_comparison} the state average and "
+        f"{national_comparison} the national average."
+    )
+
+
+# -----------------------------
+# Sidebar filters
+# -----------------------------
+st.sidebar.header("Search")
+
+states = sorted(df["State"].dropna().unique())
 selected_state = st.sidebar.selectbox("State", states)
 
-df_state = df[df["state"] == selected_state].copy()
-counties = sorted(df_state["county"].dropna().unique())
+counties = sorted(
+    df[df["State"] == selected_state]["County"]
+    .dropna()
+    .unique()
+)
+
 selected_county = st.sidebar.selectbox("County", counties)
 
-county_df = df_state[df_state["county"] == selected_county].copy()
-county_summary = summary[
-    (summary["state"] == selected_state) & (summary["county"] == selected_county)
+# -----------------------------
+# Filter selected county data
+# -----------------------------
+county_df = df[
+    (df["State"] == selected_state) &
+    (df["County"] == selected_county)
 ].copy()
 
-# -----------------------------
-# Title
-# -----------------------------
-st.title("Deadly Data: County Pollution Lookup")
-st.caption("Explore how pollution burden changed across counties over time, with state and national comparisons.")
+latest_year = county_df["Year"].max()
 
+latest_county = county_df[county_df["Year"] == latest_year].iloc[0]
+
+state_latest_df = df[
+    (df["State"] == selected_state) &
+    (df["Year"] == latest_year)
+]
+
+national_latest_df = df[df["Year"] == latest_year]
+
+# -----------------------------
+# Header
+# -----------------------------
 st.subheader(f"{selected_county}, {selected_state}")
 
-# -----------------------------
-# Group badge
-# -----------------------------
-if not county_df.empty:
-    group_val = county_df["group"].iloc[0]
-    if group_val == "DC-heavy":
-        st.markdown('<span class="badge-red">DC-heavy county</span>', unsafe_allow_html=True)
-    else:
-        st.markdown('<span class="badge-blue">Non-DC county</span>', unsafe_allow_html=True)
-
-# -----------------------------
-# Latest values
-# -----------------------------
-latest_year = county_df["year"].max()
-latest = county_df[county_df["year"] == latest_year].copy()
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">PM2.5</div>
-        <div class="metric-value">{latest["PM25"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">Diesel PM</div>
-        <div class="metric-value">{latest["DSLPM"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">Traffic Proximity</div>
-        <div class="metric-value">{latest["PTRAF"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">Respiratory Hazard</div>
-        <div class="metric-value">{latest["RESP"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-
-with col3:
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">Wastewater</div>
-        <div class="metric-value">{latest["PWDIS"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-    st.markdown(f'''
-    <div class="metric-card">
-        <div class="metric-label">Ozone</div>
-        <div class="metric-value">{latest["OZONE"].iloc[0]:.3f}</div>
-    </div>
-    ''', unsafe_allow_html=True)
-
-# -----------------------------
-# Indicator selection
-# -----------------------------
-indicator_map = {
-    "PM2.5": ("PM25", "PM25_state_avg", "PM25_national_avg"),
-    "Diesel PM": ("DSLPM", "DSLPM_state_avg", "DSLPM_national_avg"),
-    "Traffic Proximity": ("PTRAF", "PTRAF_state_avg", "PTRAF_national_avg"),
-    "Respiratory Hazard": ("RESP", "RESP_state_avg", "RESP_national_avg"),
-    "Wastewater": ("PWDIS", "PWDIS_state_avg", "PWDIS_national_avg"),
-    "Ozone": ("OZONE", "OZONE_state_avg", "OZONE_national_avg")
-}
-
-indicator_label = st.selectbox("Indicator", list(indicator_map.keys()))
-county_col, state_col, national_col = indicator_map[indicator_label]
-
-latest_county = latest[county_col].iloc[0]
-latest_state = latest[state_col].iloc[0]
-latest_national = latest[national_col].iloc[0]
-
-state_relation = "above" if latest_county > latest_state else "below" if latest_county < latest_state else "equal to"
-national_relation = "above" if latest_county > latest_national else "below" if latest_county < latest_national else "equal to"
-
 st.markdown(
-    f'''
-    <div class="info-card">
-    <b>Latest-year comparison:</b> {indicator_label} in <b>{selected_county}</b> is
-    <b>{state_relation}</b> the state average and <b>{national_relation}</b> the national average.
-    </div>
-    ''',
+    """
+    <span style="
+        background-color:#2d5bd1;
+        color:white;
+        padding:8px 14px;
+        border-radius:20px;
+        font-weight:600;
+        font-size:14px;
+    ">
+        Non-DC county
+    </span>
+    """,
     unsafe_allow_html=True
 )
 
-# -----------------------------
-# Trend chart
-# -----------------------------
-plot_df = county_df[["year", county_col, state_col, national_col]].copy()
-plot_df = plot_df.rename(columns={
-    county_col: "County",
-    state_col: "State Average",
-    national_col: "National Average"
-})
+st.write("")
 
-plot_long = plot_df.melt(
-    id_vars="year",
-    value_vars=["County", "State Average", "National Average"],
-    var_name="Series",
-    value_name="Value"
+# -----------------------------
+# Metric cards with health labels
+# -----------------------------
+metric_cols = st.columns(3)
+
+for i, indicator in enumerate(indicators):
+    county_value = latest_county[indicator]
+    national_avg = national_latest_df[indicator].mean()
+
+    health_label, health_icon = get_health_label(county_value, national_avg)
+
+    with metric_cols[i % 3]:
+        st.metric(
+            label=f"{indicator} {health_icon}",
+            value=round(county_value, 3),
+            delta=health_label
+        )
+
+# -----------------------------
+# Indicator selector
+# -----------------------------
+selected_indicator = st.selectbox("Indicator", indicators)
+
+# -----------------------------
+# Latest-year comparison message
+# -----------------------------
+county_latest_value = latest_county[selected_indicator]
+state_latest_avg = state_latest_df[selected_indicator].mean()
+national_latest_avg = national_latest_df[selected_indicator].mean()
+
+comparison_message = get_comparison_sentence(
+    selected_indicator,
+    selected_county,
+    county_latest_value,
+    state_latest_avg,
+    national_latest_avg
 )
 
+st.info(comparison_message)
+
+# -----------------------------
+# Prepare chart data
+# -----------------------------
+county_trend = county_df[["Year", selected_indicator]].copy()
+county_trend["Series"] = "County"
+county_trend = county_trend.rename(columns={selected_indicator: "Value"})
+
+state_trend = (
+    df[df["State"] == selected_state]
+    .groupby("Year")[selected_indicator]
+    .mean()
+    .reset_index()
+)
+state_trend["Series"] = "State Average"
+state_trend = state_trend.rename(columns={selected_indicator: "Value"})
+
+national_trend = (
+    df.groupby("Year")[selected_indicator]
+    .mean()
+    .reset_index()
+)
+national_trend["Series"] = "National Average"
+national_trend = national_trend.rename(columns={selected_indicator: "Value"})
+
+chart_df = pd.concat(
+    [county_trend, state_trend, national_trend],
+    ignore_index=True
+)
+
+# -----------------------------
+# Chart
+# -----------------------------
+st.markdown(f"### {selected_indicator}: {selected_county} vs State vs National")
+
 fig = px.line(
-    plot_long.sort_values("year"),
-    x="year",
+    chart_df,
+    x="Year",
     y="Value",
     color="Series",
     markers=True,
-    title=f"{indicator_label}: {selected_county} vs State vs National"
+    title=None
 )
 
 fig.update_layout(
-    legend_title_text="Series",
     xaxis_title="Year",
-    yaxis_title="Value"
+    yaxis_title="Value",
+    legend_title="Series",
+    template="plotly_dark",
+    height=450
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
-# Summary section
+# Health label guide
 # -----------------------------
-st.markdown("## Summary")
+st.markdown("### Health Label Guide")
 
-show_summary = county_summary[county_summary["indicator"] == county_col]
-if not show_summary.empty:
-    row = show_summary.iloc[0]
+st.markdown(
+    """
+    The health label compares the county's latest-year value to the national average.
 
-    s1, s2, s3 = st.columns(3)
-    with s1:
-        st.metric("Before Average", f"{row['before_avg']:.3f}")
-    with s2:
-        st.metric("Present Average", f"{row['present_avg']:.3f}")
-    with s3:
-        st.metric("Percent Change", f"{row['pct_change']:.2f}%")
+    | Label | Meaning |
+    |---|---|
+    | 🟢 Healthy | County value is more than 10% below the national average |
+    | 🟡 Moderate | County value is within 10% of the national average |
+    | 🔴 Unhealthy | County value is more than 10% above the national average |
 
-    direction = row["direction"]
-    if direction == "Improved":
-        st.success(
-            f"{indicator_label} improved in {selected_county}. "
-            f"It moved from {row['before_avg']:.3f} to {row['present_avg']:.3f}."
-        )
-    elif direction == "Worsened":
-        st.error(
-            f"{indicator_label} worsened in {selected_county}. "
-            f"It moved from {row['before_avg']:.3f} to {row['present_avg']:.3f}."
-        )
-    else:
-        st.info(f"{indicator_label} showed little or no change in {selected_county}.")
-
-    comparison_df = pd.DataFrame({
-        "Measure": ["Before Average", "Present Average", "Absolute Change", "Percent Change", "Direction"],
-        "Value": [
-            round(row["before_avg"], 3),
-            round(row["present_avg"], 3),
-            round(row["abs_change"], 3),
-            f"{row['pct_change']:.2f}%",
-            row["direction"]
-        ]
-    })
-
-    st.markdown("### Before vs Present")
-    st.dataframe(comparison_df, use_container_width=True, hide_index=True)
-
-# -----------------------------
-# Raw data
-# -----------------------------
-st.markdown("## Raw county-year data")
-st.dataframe(county_df, use_container_width=True)
+    Since these are pollution indicators, lower values are generally better.
+    """
+)
